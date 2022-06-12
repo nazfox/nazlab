@@ -49,7 +49,6 @@ function command_help() {
     }'
 
     awk "$awk_code" "$this_file"
-
 }
 
 function init() {
