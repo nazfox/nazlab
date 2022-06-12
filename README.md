@@ -1,20 +1,18 @@
 # Nazuna Laboratory (nazlab)
 
-## 要件
+なづなのためのAI研究フレームワーク
 
-- 学習済みモデルを簡単エクスポート
-- TensorBoardで可視化
-- yamlファイルと学習結果が1対1で対応
-- 学習の中断と再開が可能
-- モジュール化を意識する構造
-  - モデル、最適化手法、目的関数などを分けて考えられる
-- 導入が簡単であること
 
-NICEで試した結果をここに反映する
+## 特徴(TODO)
 
-第三者がリポジトリを見たときにどこに何があるかが直感的に分かること
+- [x] 導入が簡単
+- [ ] 学習済みモデルを簡単エクスポート(C++やRustから使えるように)
+- [ ] TensorBoardでデータを可視化
+- [ ] yamlファイルと学習結果が1対1で対応
+- [ ] 学習の中断と再開
+- [ ] 第三者にも分かりやすいディレクトリ構造
+- [ ] 理解しやすいソースコード
 
-本質的でないコードがモデルに紛れ込まないようにする
 
 ## 使い方
 
@@ -23,17 +21,60 @@ NICEで試した結果をここに反映する
 ```
 git clone git@github.com:nazfox/nazlab.git project-name
 cd project-name
-./nazlab lab init
+./nazlab init
 ```
 
-nazlabを最新にアップデート
+pyenv で Python のインストールと venv で仮想環境を作成を行う
+
+requirements.txt のインストールも行われる
+
+
+## 利用可能なコマンド一覧
+
+### tensorboard
+
+TensorBoardを実行
+
+ログディレクトリは `./logs`
 
 ```
-./nazlab lab update
+./nazlab tensorboard
+```
+
+### notebook
+
+Jupyter Notebook を実行
+
+notebook の保存先は `./notebooks`
+
+```
+./nazlab notebook
+```
+
+### add
+
+requirements.txt へパッケージを追加  
+pip でパッケージをインストール
+
+```
+./nazlab add package ...
 ```
 
 
-## 依存ライブラリの追加手順
+### run
 
-`./requirements.txt`へ依存パッケージを追記
+仮想環境内で引数に渡されたコマンドを実行
+
+```
+./nazlab run command [args...]
+```
+
+
+### shell
+
+仮想環境内でシェルを起動
+
+```
+./nazlab shell
+```
 
