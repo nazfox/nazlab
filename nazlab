@@ -1,0 +1,180 @@
+#!/usr/bin/bash
+
+#===========================================================
+#
+# This is task runner for Nazuna Laboratory.
+# Show usage with `./nazlab help`.
+#
+#===========================================================
+
+
+#===========================================================
+# VARIABLES
+#===========================================================
+
+pyver="3.8.13"
+venv=".venv"
+
+this_file="$0"
+command_max_char="20"
+
+notebook_dir="./notebooks"
+tensorboard_dir="./logs"
+
+
+#===========================================================
+# UTILITIES
+#===========================================================
+
+function command_help() {
+    local white_spaces=$(printf "%""$command_max_char""s")
+
+    local awk_code=' \
+    { \
+        if ($0 ~ /^#\?/) { \
+            if (help_message) { \
+                help_message = help_message "\n'"$white_spaces"' "; \
+            } \
+            help_message = help_message substr($0, 3); \
+        } else if ($0 ~ /^function [a-zA-Z_0-9]+()/) { \
+            cmd_len = index($0, "()") - 10; \
+            target = substr($0, 10, cmd_len); \
+            if (help_message) { \
+                printf "  %-'"$command_max_char"'s %s\n", target, help_message; \
+                help_message = ""; \
+            } \
+        } else { \
+            help_message = ""; \
+        } \
+    }'
+
+    awk "$awk_code" "$this_file"
+
+}
+
+function init() {
+    # TODO venvのpythonバージョンが正しいことを確認
+    # TODO pythonバージョンが正しいことを確認
+    if [[ ! -d "$venv" ]]; then
+        pyenv install $pyver
+        pyenv local $pyver
+        pyenv exec python -m venv .venv
+        source .venv/bin/activate
+        pip install -U pip setuptools wheel
+        pip install -r requirements.txt
+        deactivate
+    fi
+}
+
+function pip-lock() {
+    local timestamp=$(date +%s)
+    pyenv exec python -m venv .venv_temp_${timestamp}
+    source .venv_temp_${timestamp}/bin/activate
+    pip install -U pip setuptools wheel
+    pip install -r requirements.txt
+    pip freeze > requirements.lock
+    deactivate
+    rm -rf .venv_temp_${timestamp}
+}
+
+function parent_command() {
+    ps -o comm= $PPID
+}
+
+function shellrun() {
+    bash -c '"$@"' _ "$@"
+}
+
+
+#===========================================================
+# COMMANDS
+#===========================================================
+
+#? Display this message.
+function help() {
+    echo "Usage:"
+    echo "  $this_file [command] ..."
+    echo ""
+    echo "Available commands:"
+    echo "$(command_help)"
+}
+
+# train ./config/exp01.yaml
+function train() {
+    local config="$1"
+
+    if [[ -z $config ]]; then
+        echo "We need config file"
+        exit 1
+    fi
+
+    run python ./tools/train.py
+}
+
+#? Spawns a command installed into the virtualenv.
+function run() {
+    source "$venv/bin/activate"
+    shellrun $@
+    deactivate
+}
+
+#? Spawns a shell within the virtualenv.
+function shell {
+    source "$venv/bin/activate"
+    $(parent_command)
+    deactivate
+}
+
+function add() {
+    local packages="$@"
+
+    if [[ -z $packages ]]; then
+        echo "パッケージ名教えて"
+        exit 1
+    fi
+
+    for package in $packages; do
+        echo $package >> requirements.txt
+    done
+
+    sort -u ./requirements.txt > .requirements.tmp
+    mv -f .requirements.tmp requirements.txt
+
+    run pip install $packages
+
+    #pip-lock
+}
+
+function remove() {
+    local packages="$@"
+
+    if [[ -z $packages ]]; then
+        echo "パッケージ名教えて"
+        exit 1
+    fi
+
+    run pip uninstall $packages
+
+    #pip-lock
+}
+
+function tensorboard() {
+    run tensorboard --logdir $tensorboard_dir
+}
+
+function notebook() {
+    run jupyter-lab --notebook-dir=$notebook_dir
+}
+
+
+#===========================================================
+# MAIN
+#===========================================================
+
+function main() {
+    init
+    [[ -z $@ ]] && help || $@
+}
+
+main $@
+
