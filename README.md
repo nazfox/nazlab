@@ -78,3 +78,14 @@ pip でパッケージをインストール
 ./nazlab shell
 ```
 
+### pip-lock
+
+実は requirements.lock を生成出来たりする  
+
+git push するまえに実行したらいいんじゃないかなぁ  
+まだ荒削りなのでおすすめはしない
+
+```
+./nazlab pip-lock
+```
+
