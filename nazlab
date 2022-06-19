@@ -52,6 +52,10 @@ function command_help() {
 }
 
 function init() {
+    echo '-------------------------'
+    echo $1
+    echo '-------------------------'
+
     # TODO venvのpythonバージョンが正しいことを確認
     # TODO pythonバージョンが正しいことを確認
     if [[ ! -d "$venv" ]]; then
@@ -60,8 +64,17 @@ function init() {
         pyenv exec python -m venv .venv
         source .venv/bin/activate
         pip install -U pip setuptools wheel
-        pip install -r requirements.txt
+        if [[ $1 == '--cu11' ]]; then
+            echo ----------- cu11 ------------
+            pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu113
+        else
+            pip install -r requirements.txt
+        fi
         deactivate
+    fi
+
+    if [[ ! -d ".git-nazlab" ]]; then
+        mv .git .git-nazlab
     fi
 }
 
@@ -103,11 +116,11 @@ function train() {
     local config="$1"
 
     if [[ -z $config ]]; then
-        echo "We need config file"
+        echo "実験条件指定してね"
         exit 1
     fi
 
-    run python ./tools/train.py
+    run python ./tools/train.py $config
 }
 
 #? Spawns a command installed into the virtualenv.
@@ -171,7 +184,13 @@ function notebook() {
 #===========================================================
 
 function main() {
-    init
+    # TODO 実装 "そんなコマンド知らない"
+
+    if [[ $1 != 'init' && ! -d .venv ]]; then
+        echo 'はじめに ./nazlab init して'
+        exit 1
+    fi
+
     [[ -z $@ ]] && help || $@
 }
 

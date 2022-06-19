@@ -1,2 +1,3 @@
-.venv/
+.git-nazlab/
 .python-version
+.venv/

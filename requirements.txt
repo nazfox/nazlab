@@ -1,6 +1,7 @@
 jupyterlab==3.2.8
 matplotlib==3.5.1
 numpy
+pyyaml
 tensorflow==2.7.0
 torch==1.10.2
 torchaudio==0.10.2
